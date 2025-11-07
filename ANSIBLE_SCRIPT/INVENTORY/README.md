@@ -1,1 +1,0 @@
-This is ANSIBLE HOST INVENTORY Directory.

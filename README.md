@@ -1,45 +1,145 @@
-# Github URL : https://github.com/infra-se/system
-# Description : Linux System Engineering & Infra automation Code
+## [ Release info ]  
+2025.04.18. Script Version 1.1 기준 시점복원 기능 구현이 완료 되었습니다.  
+1. 이제 Script 구동시 YYYYmmdd_HHMMSS 형식으로 백업 시점 디렉토리를 생성하여 백업 생성본의 시점을 구분합니다.  
+2. Script 를 통한 Restore 수행시 시스템에 생성된 YYYYmmdd_HHMMSS 형식의 백업 디렉토리를 스캔하고, 확인된 백업 리스트를 사용자에게 알려줍니다.
+3. 사용자가 입력한 복원시점을 기준으로 최종 복구를 수행을 합니다.  
+  
+## [ 설명 ]
+이 Script는 KISA 한국인터넷진흥원에서 배포/관리하는 UNIX/LINUX 계열 OS 취약점 진단/조치 가이드 72개 항목에 대한 진단 및 조치를 자동화 수행하는 Script 입니다.  
+(https://www.kisa.or.kr/2060204/form?postSeq=12&lang_type=KO&page=1)  
 
-## [ Usage ]
-1. wget -O - https://github.com/infra-se/system/blob/main/get_script.sh?raw=true | bash
+1. 본 스크립트를 설치, 실행 함에 있어 발생 또는 발생 할 수 있는 모든 예기치 않은 오류나 손실에 대해서 본인은 법적인 책임을 갖지 않습니다.  
+(단, 해당 스크립트의 사용 중 발생 또는 확인된 오류에 대해서 제보, 공유해 주시면 적극적으로 수정 및 반영토록 노력하겠습니다. helperchoi@gmail.com / Kwang Min Choi )
+2. Redhat 계열( Centos, Rocky, RHEL, OEL 등 ) 7.x 이상, Ubuntu 18.04 LTS 이상 Systemd 기반 환경에서만 동작토록 구현되어있으며, 이미 EOL 된지 오래된 xinetd 기반 Linux 환경에서는 동작하지 않거나, 정상적인 실행이 어렵습니다.
+3. 모든 처리 Logic은 각 기능별로 Function 화 구현되어 있어, 재사용, 분리, 실행 예외 처리 가능합니다.  
+(공통 모듈 25개를 포함한 총 85개 이상 각 기능별로 분리된 Logic Function화)
+![image](https://github.com/user-attachments/assets/74d4102e-ba6c-45eb-9a38-23a790499eb3)
+  
+4. **25년 4월 14일자 Script Version 1.0 이후 기준 72개 취약점 항목에 대해서 자동화 조치 구현 완료** (단 MW 진단항목 U35, U36, U37, U38, U39, U40, U41, U71 8개는 예외 처리중이며 추후 구현예정)  
+5. 실제 Script 실행전 KISA Link 문서 확인을 통해 아래 예시와 같이 실행 환경 특성에 맞게 예외처리가 필요한 항목들을 반드시 확인 후 실행하는 것을 권장 합니다. 
+  
+(예 : k8s, docker 등 Container 환경에서 사용되는 OverlayFS 영역등에 적재되는 File 권한은 기본적으로 Container OS에 종속된 계정 UID/GID 값을 기준으로 생성되기 때문에 Woker Node등 Host OS에서는 소유주가 없는 파일로 인식됨.  
+따라서 U-06 취약점 항목과 같은 소유주가 없는 파일에 대한 식별 및 삭제 조치를 취하는 항목의 실행에 대해서는 신중을 기해야하며, 본 Script에서도 U-06 취약항목에 대해서는 직접 파일 삭제를 하지 않고, 내역 표기 및 경고처리를 하도록 Logic화 구현 되어있음.)  
+  
+![image](https://github.com/user-attachments/assets/b13d8681-9384-4c73-a3c1-a42c32f3cc10)
+  
+![image](https://github.com/user-attachments/assets/ce4417ad-846d-4885-ae74-beca3d6eccd5)
+  
+4. 실행 예외가 필요한 항목이 확인되면, 아래 예시와 같이 Script 맨 하단부 FUNCT_MAIN_PROCESS 영역에서 대상 항목에 대해 간단히 주석처리를 통해 예외 처리 가능합니다.  
+![image](https://github.com/user-attachments/assets/fa42e5ce-f87e-4363-8583-4538315d0a3d)
+
+  
+## [ 사용법 ]
+
+1. 시스템에 root 로 Login 하거나 root 계정으로 스위칭을 수행 합니다. (ex : sudo -i)
+2. 아래과 같은 명령을 통해 Script Download 및 설치를 수행 합니다.
+
+wget -O - https://github.com/infra-se/system/blob/main/KISA_SECURITY/get_script.sh?raw=true | bash
 ```
 [root@centos01 ~]# 
 [root@centos01 ~]# id
 uid=0(root) gid=0(root) groups=0(root)
 [root@centos01 ~]# 
-[root@centos01 ~]# wget -O - https://github.com/infra-se/system/blob/main/get_script.sh?raw=true | bash
---2023-12-14 23:55:25--  https://github.com/infra-se/system/blob/main/get_script.sh?raw=true
+[root@centos01 ~]# pwd
+/root
+[root@centos01 ~]# 
+[root@centos01 ~]# 
+[root@centos01 ~]# wget -O - https://github.com/infra-se/system/blob/main/KISA_SECURITY/get_script.sh?raw=true | bash
 
 ...
 
-100%[=======================================================================>]         --.-K/s   in 0s      
+HTTP request sent, awaiting response... 200 OK
+Length: 1746 (1.7K) [text/plain]
+Saving to: ‘STDOUT’
 
-2023-12-14 23:55:26 (33.8 MB/s) - written to stdout [783/783]
+100%[=============================================================================>] 1,746       --.-K/s   in 0s      
+
+2025-03-11 20:51:49 (46.2 MB/s) - written to stdout [1746/1746]
 
 
-[INFO] Script Path Initialize : /root/shell
+[INFO] Script Path Initialize : /root/shell/KISA_SECURITY 
 Cloning into 'system'...
-remote: Enumerating objects: 271, done.
-remote: Counting objects: 100% (128/128), done.
-remote: Compressing objects: 100% (111/111), done.
-remote: Total 271 (delta 84), reused 17 (delta 17), pack-reused 143
-Receiving objects: 100% (271/271), 94.03 KiB | 0 bytes/s, done.
-Resolving deltas: 100% (137/137), done.
+remote: Enumerating objects: 569, done.
+remote: Counting objects: 100% (55/55), done.
+remote: Compressing objects: 100% (21/21), done.
+remote: Total 569 (delta 43), reused 34 (delta 34), pack-reused 514 (from 1)
+Receiving objects: 100% (569/569), 179.66 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (333/333), done.
 
-[INFO] Script Download Path : /root/shell
-/root/shell/management_os/all_user_fd_cnt.sh
-/root/shell/management_os/change_oom_score.sh
-/root/shell/management_os/check_ethernet_info.sh
-/root/shell/management_os/check_java_instance.sh
-/root/shell/management_os/check_os.sh
-/root/shell/management_os/check_web.sh
-/root/shell/management_os/use_swap.sh
-/root/shell/management_os/user_define_fd_cnt.sh
-/root/shell/management_os/user_define_session_cnt.sh
-/root/shell/management_git/0_git_push_dont_pr.sh
-/root/shell/management_git/1_pr_branch.sh
-/root/shell/management_git/2_delete_branch.sh
+[INFO] Script Download Path : /root/shell/KISA_SECURITY 
+/root/shell/KISA_SECURITY/common
+/root/shell/KISA_SECURITY/sec_std_conf.sh
 
 [root@centos01 ~]# 
+[root@centos01 ~]#
 ```
+3. 아래와 같이 Script 실행시 실행 (PROC) / 복구 (RESTORE) 옵션을 선택 입력하여 실행을 수행하며 (진단 및 조치 자동화)  
+취약점 조치 작업에 의한 시스템 이상 발생등, 유사시 작업전 형상으로 원복 및 복구를 위해 Script 실행시 기본적으로 관련 File 및 권한정보를 백업하도록 Logic화 되어있습니다.
+```
+[root@centos01 KISA_SECURITY]# 
+[root@centos01 KISA_SECURITY]# ./sec_std_conf.sh 
+
+[ERROR] centos01 WORK TYPE was not Input.
+
+### 1. Input Work Type : Only PROC or RESTORE ###
+
+Usage ) : ./sec_std_conf.sh PROC
+
+[root@centos01 KISA_SECURITY]# 
+[root@centos01 KISA_SECURITY]# 
+[root@centos01 KISA_SECURITY]# 
+[root@centos01 KISA_SECURITY]# ./sec_std_conf.sh PROC
+
+[RECOMMEND] Be sure to read the guide document before running.
+https://github.com/infra-se/system/blob/main/KISA_SECURITY/README.md
+
+[QUESTION] Do you want run Script ? : y or n
+
+y
+
+### PROCESS U01 ###
+[INFO] centos01 Backup Complete : /root/shell/CONF_BACKUP/20250418_165910/etc/ssh/sshd_config.20250418_165910
+[INFO] centos01 Processing PermitRootLogin no : /etc/ssh/sshd_config
+
+### PROCESS U02 ###
+[INFO] centos01 Backup Complete : /root/shell/CONF_BACKUP/20250418_165910/etc/security/pwquality.conf.20250418_165910
+[INFO] centos01 Processing Password Quality : /etc/security/pwquality.conf
+
+### PROCESS U03 ###
+[INFO] centos01 Backup Complete : /root/shell/CONF_BACKUP/20250418_165910/etc/pam.d/system-auth-ac.20250418_165910
+[INFO] centos01 Processing Password Lock : /etc/pam.d/system-auth
+
+### PROCESS U04 ###
+[INFO] centos01 Shadow encryption enabled OK : /etc/shadow
+
+### PROCESS U05 ###
+[INFO] centos01 There is no problem with the PATH environment variable : OK
+
+### PROCESS U06 ###
+[-] Please wait. Progress ...
+
+...  중략
+
+[root@centos01 CONF_BACKUP]# 
+[root@centos01 CONF_BACKUP]# pwd
+/root/shell/CONF_BACKUP
+[root@centos01 CONF_BACKUP]# 
+[root@centos01 CONF_BACKUP]# ll
+total 0
+drwxr-xr-x 5 root root  72 Apr 18 14:20 20250418_142050
+drwxr-xr-x 5 root root 128 Apr 18 14:23 20250418_142307
+drwxr-xr-x 5 root root 128 Apr 18 14:23 20250418_142316
+drwxr-xr-x 5 root root 128 Apr 18 14:23 20250418_142335
+drwxr-xr-x 5 root root 128 Apr 18 14:28 20250418_142803
+drwxr-xr-x 5 root root 128 Apr 18 16:59 20250418_165910
+[root@centos01 CONF_BACKUP]# 
+[root@centos01 CONF_BACKUP]# 
+
+```
+
+4. 필요시 아래와 같이 RESTORE 옵션 입력을 통해 SCRIPT 수행 전 형상으로 자동 원복/복구 가능 합니다.  
+(시점복원 기능이 구현되어 있습니다. 아래 예시와 같이 원하는 복원 시점을 선택하여 입력하시면 해당 시점으로 복원이 진행됩니다.)  
+  
+![image](https://github.com/user-attachments/assets/25b94059-7a88-49bc-9ac2-9313ccb46fd3)
+
+
